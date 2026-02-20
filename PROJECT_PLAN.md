@@ -153,7 +153,7 @@ Assume ~**5 hours/day**, ~**25 hours/week**. Reading is intentionally bounded an
 - Tooling familiarity (ASR API/perf): [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
 
 **Deliverables**
-- Working dev env (local or Docker) + minimal “hello audio” script:
+- Working dev env (local) + minimal “hello audio” script:
   - load audio, compute duration
   - chunk into frames (e.g., 20–40 ms hop) and print chunk timing
 - Decide runtime mode(s): CPU-only vs GPU; document what you’ll benchmark against
@@ -230,7 +230,7 @@ Assume ~**5 hours/day**, ~**25 hours/week**. Reading is intentionally bounded an
 - You can report RTF and p50/p95 emission latency on the gold set
 - Attribution policy is documented with at least one concrete example
 
-### Week 5 — productionization (deployable + operable)
+### Week 5 — “production signal” (CLI-only)
 **Reading (prepares Week 6)**
 - Read two chapters from the open Google SRE book (bounded, universal):
   - Monitoring distributed systems
@@ -238,17 +238,18 @@ Assume ~**5 hours/day**, ~**25 hours/week**. Reading is intentionally bounded an
   - Start here: [Google SRE book](https://sre.google/sre-book/table-of-contents/)
 
 **Deliverables**
-- Dockerize service (CPU + optional GPU). Single command to run demo + single command to run eval
-- Structured logging + metrics endpoint; expose per-stage timings and queue depth
+- Keep it CLI-only: no Docker, no network services. Focus on reproducibility and operability.
+- Single command to run demo + single command to run eval (via `Makefile`)
+- Structured artifacts per run (JSON output + timing summary + config used)
 - Tests:
   - unit tests for stabilizer + attribution edge cases
   - one integration “golden” test (short audio) with tolerant assertions
 - Runbook section: tuning knobs, expected failure modes, how to debug
 
 **Definition of Done**
-- From-scratch setup works: build image → run demo → run eval
-- Service exposes health + metrics endpoints; logs are structured (JSON recommended)
-- Backpressure behavior is explicit and tested
+- From-scratch setup works: create venv → install deps → run demo → run eval
+- Logs/artifacts are structured (JSON recommended) and include per-stage timings
+- Backpressure behavior is explicit and tested (in the pseudo-streaming loop)
 - At least one performance knob has before/after measurements (chunk size, beam size, batch size)
 
 ### Week 6 — polish to interview-ready (report + story + robustness)
@@ -279,23 +280,20 @@ Assume ~**5 hours/day**, ~**25 hours/week**. Reading is intentionally bounded an
 - Latency vs `D`
 - Ablation table: VAD hangover, chunk size, prototype update rule, thresholding
 
-## 8) Production plan (deploy/operate)
-Minimum production deliverables (bounded, single-service):
-- **Service interface**:
-  - WebSocket (or gRPC) streaming endpoint for audio frames + incremental transcript events
-  - file-based batch endpoint/CLI for reproducible evaluation
+## 8) Production signal (CLI-only, deploy/operate mindset without infra)
+Minimum “ship/maintain” deliverables without turning this into an infra project:
 - **Packaging + reproducibility**:
-  - `pyproject.toml` / `requirements.txt` pinned + a `Makefile` (or task runner)
-  - Docker image build; GPU optional; known-good config checked into the repo
-- **Observability**:
-  - structured logs, request IDs, per-stage timings (VAD, embed, diarize, ASR, fusion, stabilizer)
-  - metrics endpoint: RTF, p50/p95 latency, GPU/CPU utilization (best effort), queue depth/backpressure
-- **Operational safety**:
-  - backpressure policy (drop/compact frames, or increase chunk size) and explicit latency budget
-  - deterministic eval mode (seeded); graceful degradation if embeddings/ASR fail
+  - pinned `requirements.txt` (or `pyproject.toml`) + a `Makefile` for one-command checks
+  - deterministic toy mode for tests and regression hunting
+- **Observability (CLI)**:
+  - structured logs/artifacts + per-stage timings (VAD, embed, diarize, ASR, fusion, stabilizer)
+  - write timing summaries to JSON so you can compare runs
+- **Operational safety (even in CLI)**:
+  - explicit buffering/backpressure policy in pseudo-streaming mode
+  - explicit latency budget and measurement (p50/p95, RTF)
 - **Maintainability**:
-  - unit tests for stabilization + attribution; integration test on a tiny “gold” fixture audio
-  - clear runbook: how to run/debug/tune; common failure modes
+  - unit tests for stabilization + attribution; one small integration “golden” test
+  - short runbook: how to run/debug/tune; common failure modes
 
 ## 9) Datasets + repo structure
 **Datasets (choose based on availability)**

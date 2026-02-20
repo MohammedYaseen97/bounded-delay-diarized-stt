@@ -37,8 +37,8 @@ For weekly checklists (“assignment PDFs”), see `assignments/INDEX.md`.
 - **Pass condition**: `python scripts/check_week4_streaming_semantics.py` exits 0.
 - **Reading gate**: `python scripts/check_reading.py --week 4` exits 0.
 
-#### Week 5 — Productionization (bounded, CLI-first)
-- **Goal**: reproducible runs + packaging + observability.
+#### Week 5 — “Production signal” (CLI-only)
+- **Goal**: reproducible runs + artifacts/timings + tests + runbook (no Docker/services).
 - **Pass condition**: `bash scripts/check_week5_packaging.sh` exits 0.
 - **Reading gate**: `python scripts/check_reading.py --week 5` exits 0.
 
